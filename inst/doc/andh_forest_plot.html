@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Husby’s Multi Faceted Forest Plot</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Husby’s Multi Faceted Forest Plot</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(EpiForsk)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Vedhæfter pakke: &#39;dplyr&#39;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; De følgende objekter er maskerede fra &#39;package:stats&#39;:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     filter, lag</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; De følgende objekter er maskerede fra &#39;package:base&#39;:</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(grDevices)</span></code></pre></div>
+<div id="example-1-plain-text" class="section level1">
+<h1>Example 1: Plain text</h1>
+<p>If you are on a windows system you can set the fonts in the following
+way</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">windowsFonts</span>(<span class="at">Calibri =</span> <span class="fu">windowsFont</span>(<span class="st">&quot;TT Calibri&quot;</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">windowsFonts</span>(<span class="at">Helvetica =</span> <span class="fu">windowsFont</span>(<span class="st">&quot;TT Helvetica&quot;</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">windowsFonts</span>(<span class="at">Arial =</span> <span class="fu">windowsFont</span>(<span class="st">&quot;TT Arial&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> andh_forest_data <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">order =</span> <span class="fu">rev</span>(<span class="fu">row_number</span>()) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="fu">paste0</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_when</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        indent <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;&quot;</span>, </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        indent <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;  &quot;</span>, </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        indent <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">&quot;    &quot;</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;      &quot;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      text</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> A_est<span class="sc">:</span>C_u, </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;headline&quot;</span>, <span class="st">&quot;.value&quot;</span>),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_sep =</span> <span class="st">&quot;_&quot;</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot_options <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">headline       =</span> <span class="fu">c</span>(   <span class="st">&quot;A&quot;</span>,   <span class="st">&quot;B&quot;</span>,   <span class="st">&quot;C&quot;</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">color          =</span> <span class="fu">c</span>(<span class="st">&quot;red2&quot;</span>, <span class="st">&quot;dodgerblue2&quot;</span>, <span class="st">&quot;springgreen2&quot;</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill           =</span> <span class="fu">c</span>(<span class="st">&quot;red4&quot;</span>, <span class="st">&quot;dodgerblue4&quot;</span>, <span class="st">&quot;springgreen4&quot;</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower_vertical =</span> <span class="fu">c</span>(  <span class="sc">-</span><span class="fl">0.2</span>,  <span class="sc">-</span><span class="fl">0.4</span>,  <span class="sc">-</span><span class="fl">0.2</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">mid_vertical   =</span> <span class="fu">c</span>(     <span class="dv">0</span>,     <span class="dv">0</span>,     <span class="dv">0</span>),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper_vertical =</span> <span class="fu">c</span>(   <span class="fl">0.2</span>,   <span class="fl">0.1</span>,   <span class="fl">0.2</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlim_lower     =</span> <span class="fu">c</span>(  <span class="sc">-</span><span class="fl">0.3</span>,  <span class="sc">-</span><span class="fl">0.5</span>,  <span class="sc">-</span><span class="fl">0.2</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlim_upper     =</span> <span class="fu">c</span>(   <span class="fl">0.3</span>,   <span class="fl">0.3</span>,   <span class="fl">0.2</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">headline_text  =</span> <span class="fu">c</span>(<span class="st">&quot;Language&quot;</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;Mathematics&quot;</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;Intelligence&quot;</span>),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab           =</span> <span class="fu">c</span>(<span class="st">&quot;Difference in language z-score</span><span class="sc">\n</span><span class="st">compared with no exposure&quot;</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;Difference in mathematics z-score</span><span class="sc">\n</span><span class="st">compared with no exposure&quot;</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;Difference in IQ</span><span class="sc">\n</span><span class="st">compared with no exposure&quot;</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>shared_theme <span class="ot">&lt;-</span> <span class="fu">theme</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;Arial&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">12</span>, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">hjust =</span> <span class="fl">0.5</span>, </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">vjust =</span> <span class="dv">1</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.ticks.length =</span> <span class="fu">unit</span>(<span class="fl">0.20</span>,<span class="st">&quot;cm&quot;</span>),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">margin =</span> <span class="fu">margin</span>(<span class="dv">15</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>), </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">10</span>, </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;Arial&quot;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">12</span>, </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">face =</span> <span class="st">&quot;plain&quot;</span>, </span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;Arial&quot;</span>, </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">margin =</span> <span class="fu">margin</span>(<span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.line.x =</span> <span class="fu">element_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>),</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.line.y =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">size =</span> <span class="fl">0.5</span>),</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Please use the `linewidth` argument instead.</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>plot_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(plot_options<span class="sc">$</span>headline, <span class="cf">function</span>(x) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  option <span class="ot">&lt;-</span> plot_options <span class="sc">%&gt;%</span> <span class="fu">filter</span>(headline <span class="sc">==</span> x)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="sc">%&gt;%</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(headline <span class="sc">==</span> x) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice</span>(<span class="sc">-</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> order)) <span class="sc">+</span> </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_linerange</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">xmin =</span> l, <span class="at">xmax =</span> u),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> option<span class="sc">$</span>color,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.7</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="fl">1.2</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">x =</span> est), </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">2</span>, </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">shape =</span> <span class="dv">22</span>, </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> option<span class="sc">$</span>fill</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">xintercept =</span> option<span class="sc">$</span>lower_vertical, </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> <span class="dv">2</span>,</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">xintercept =</span> option<span class="sc">$</span>mid_vertical, </span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> <span class="dv">2</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">xintercept =</span> option<span class="sc">$</span>upper_vertical, </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> <span class="dv">2</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">xlim =</span> <span class="fu">c</span>(option<span class="sc">$</span>xlim_lower, option<span class="sc">$</span>xlim_upper), </span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">19</span>), </span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">expand =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">+</span> </span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(option<span class="sc">$</span>xlab) <span class="sc">+</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(option<span class="sc">$</span>headline_text) <span class="sc">+</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;text&quot;</span>, </span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">&quot;suggests benefit&quot;</span>, </span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fl">0.025</span>, </span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="dv">1</span>, </span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">2</span>,</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, </span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>      <span class="at">fontface =</span> <span class="st">&quot;italic&quot;</span>, </span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">0</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;text&quot;</span>,</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">&quot;suggests harm&quot;</span>, </span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="sc">-</span><span class="fl">0.025</span>, </span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="dv">1</span>, </span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">2</span>,</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>, </span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>      <span class="at">fontface =</span> <span class="st">&quot;italic&quot;</span>,</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">1</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>    shared_theme <span class="sc">+</span> </span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.line.x =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.ticks.x =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Please use `linewidth` instead.</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>label_data <span class="ot">&lt;-</span> plot_data <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(type, text, order) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">text =</span> <span class="fu">str_replace</span>(text, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;\u03b2&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>label_plot <span class="ot">&lt;-</span> label_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> order)) <span class="sc">+</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> est)) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(plot_options<span class="sc">$</span>xlab[<span class="dv">1</span>]) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(plot_options<span class="sc">$</span>headline_text[<span class="dv">1</span>]) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">98</span>,<span class="dv">99</span>), </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">19</span>),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="cn">FALSE</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> label_data<span class="sc">$</span>order, </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> label_data<span class="sc">$</span>text</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  shared_theme <span class="sc">+</span> </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;white&quot;</span>),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;white&quot;</span>),</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;white&quot;</span>),</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.line.x =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;white&quot;</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.x =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">&quot;white&quot;</span>),</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="st">&quot;black&quot;</span>,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="dv">0</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> label_data<span class="sc">$</span>type</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: Vectorized input to `element_text()` is not officially supported.</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Results may be unexpected or may change in future versions of ggplot2.</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(<span class="at">plotlist =</span> <span class="fu">c</span>(<span class="fu">list</span>(label_plot), plot_list), </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">rel_widths =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>), </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
