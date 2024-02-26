@@ -109,7 +109,6 @@ flatten_date_intervals <- function(
     lag = 0
   ) {
 
-
   flat <- data |>
     dplyr::mutate(
       .numeric_in_date = as.numeric({{ in_date }}),
@@ -136,12 +135,12 @@ flatten_date_intervals <- function(
     ) |>
     dplyr::select(-".internal_running_index") |>
     dplyr::rename(
-      {{ in_date }} := .data$.interval_IN_DATE,
-      {{ out_date }} := .data$.interval_OUT_DATE
+      "{{ in_date }}" := ".interval_IN_DATE",
+      "{{ out_date }}" := ".interval_OUT_DATE"
     ) |>
     dplyr::arrange({{ id }}, {{ in_date }})
 
-  if (data |> dplyr::select({{ status }}) |> (\(x) ncol(x) == 0)()) {
+  if (dplyr::select(data, {{ status }}) |> (\(x) ncol(x) == 0)()) {
 
     return(flat)
 
@@ -154,7 +153,7 @@ flatten_date_intervals <- function(
     clean_flat <- flat |>
       dplyr::group_by(dplyr::across({{ id }})) |>
       dplyr::mutate(
-        {{ in_date }} := pmax(
+        "{{ in_date }}" := pmax(
           {{ in_date }},
           dplyr::lag({{ out_date }}),
           na.rm = TRUE
@@ -168,7 +167,7 @@ flatten_date_intervals <- function(
     clean_flat <- flat |>
       dplyr::group_by(dplyr::across({{ id }})) |>
       dplyr::mutate(
-        {{ out_date }} := pmin(
+        "{{ out_date }}" := pmin(
           dplyr::lead({{ in_date }}),
           {{ out_date }},
           na.rm = TRUE

@@ -62,19 +62,17 @@ Index for each person. Three different variations on the score has been
 implemented:
 
 \itemize{
-\item{"cc"}{Article from Quan et al. (Coding Algorithms for Defining
-Comorbidities in ICD-9 and ICD-10 Administrative Data, Med
-Care 2005:43: 1130-1139), the same HTR and others have used -
-ICD10 only}
-\item{"ch"}{Article from Christensen et al. (Comparison of Charlson
-comorbidity index with SAPS and APACHE sources for prediction
-of mortality following intensive care, Clinical Epidemiology
-2011:3 203-211), include ICD8 and ICD10 but the included
-diagnoses are not the same as in Quan}
-\item{"cd"}{Article from Sundarajan et al. (New ICD-10 version of Charlson
-Comorbidity Index predicted in-hospital mortality, Journal of
-clinical Epidemiology 57 (2004) 1288-1294, include ICD10 =
-Charlson-Deyo including cancer}
+\item cc: Article from Quan et al. (Coding Algorithms for Defining
+Comorbidities in ICD-9 and ICD-10 Administrative Data, Med Care 2005:43:
+1130-1139), the same HTR and others have used - ICD10 only
+\item ch: Article from Christensen et al. (Comparison of Charlson
+comorbidity index with SAPS and APACHE sources for prediction of mortality
+following intensive care, Clinical Epidemiology 2011:3 203-211), include
+ICD8 and ICD10 but the included diagnoses are not the same as in Quan
+\item cd: Article from Sundarajan et al. (New ICD-10 version of Charlson
+Comorbidity Index predicted in-hospital mortality, Journal of clinical
+Epidemiology 57 (2004) 1288-1294, include ICD10 = Charlson-Deyo including
+cancer
 }
 }
 \section{NOTE}{

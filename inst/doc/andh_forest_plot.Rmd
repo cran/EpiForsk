@@ -201,8 +201,8 @@ plot_list <- lapply(plot_options$headline, function(x) {
 label_data <- plot_data %>%
   group_by(type, text, order) %>%
   slice(1) %>%
-  ungroup() %>%
-  mutate(text = str_replace(text, "beta", "\u03b2"))
+  ungroup() 
+# %>% mutate(text = str_replace(text, "beta", "\u03b2"))
 ```
 
 

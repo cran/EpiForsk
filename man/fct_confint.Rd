@@ -21,13 +21,12 @@ fct_confint(
   f,
   which_parm = rep(TRUE, length(coef(object))),
   level = 0.95,
-  len = 0.1,
-  n_grid = 0L,
-  k = 1000L,
-  parallel = FALSE,
-  n_cores = 10,
   return_beta = FALSE,
-  verbose = FALSE,
+  n_grid = NULL,
+  k = NULL,
+  len = 0.1,
+  parallel = c("sequential", "multisession", "multicore", "cluster"),
+  n_cores = 10L,
   ...
 )
 
@@ -36,13 +35,12 @@ fct_confint(
   f,
   which_parm = rep(TRUE, length(coef(object))),
   level = 0.95,
-  len = 0.1,
-  n_grid = 0L,
-  k = 1000L,
-  parallel = FALSE,
-  n_cores = 10,
   return_beta = FALSE,
-  verbose = FALSE,
+  n_grid = NULL,
+  k = NULL,
+  len = 0.1,
+  parallel = c("sequential", "multisession", "multicore", "cluster"),
+  n_cores = 10L,
   ...
 )
 
@@ -51,13 +49,12 @@ fct_confint(
   f,
   which_parm = rep(TRUE, length(coef(object))),
   level = 0.95,
+  return_beta = FALSE,
   len = 0.1,
   n_grid = 0L,
   k = 1000L,
-  parallel = FALSE,
+  parallel = c("sequential", "multisession", "multicore", "cluster"),
   n_cores = 10,
-  return_beta = FALSE,
-  verbose = FALSE,
   ...
 )
 
@@ -83,29 +80,29 @@ vector with the indices of the coefficients used by \code{f}.}
 
 \item{...}{Additional argument(s) passed to methods.}
 
-\item{len}{numeric, the radius of the sphere or box used to define directions
-in which to look for boundary points of the parameter confidence set.}
-
-\item{n_grid}{Either \code{NULL} or an integer vector of length 1 or the number of
-\code{TRUE}/indices in which_parm. Specifies the number of grid points in
-each dimension of a grid with endpoints defined by len. If \code{NULL} or \code{0L},
-will instead sample k points uniformly on a sphere.}
-
-\item{k}{If n_grid is \code{NULL} or \code{0L}, the number of points to sample
-uniformly from a sphere.}
-
-\item{parallel}{Logical, if \code{TRUE} parallel computing is used when solving
-for points on the boundary of the parameter confidence set.}
-
-\item{n_cores}{An integer specifying the number of threads to use for
-parallel computing.}
-
 \item{return_beta}{Logical, if \code{TRUE} returns both the confidence limits and
 the parameter values used from the boundary of the parameter confidence
 set.}
 
-\item{verbose}{Logical, if \code{TRUE} prints information about the number of
-points on the boundary used to calculate the confidence limits.}
+\item{n_grid}{Either \code{NULL} or an integer vector of length 1 or the number of
+\code{TRUE}/indices in which_parm. Specifies the number of grid points in each
+dimension of a grid with endpoints defined by len. If \code{NULL} or \code{0L}, will
+instead sample k points uniformly on a sphere.}
+
+\item{k}{If n_grid is \code{NULL} or \code{0L}, the number of points to sample
+uniformly from a sphere.}
+
+\item{len}{numeric, the radius of the sphere or box used to define directions
+in which to look for boundary points of the parameter confidence set.}
+
+\item{parallel}{Character, specify how futures are resolved. Default is
+"sequential". Can be "multisession" to resolve in parallel in separate R
+sessions, "multicore" (not supported on Windows) to resolve in parallel in
+forked R processes, or "cluster" to resolve in parallel in separate R
+sessions running on one or more machines.}
+
+\item{n_cores}{An integer specifying the number of threads to use for
+parallel computing.}
 }
 \value{
 A tibble with columns estimate, conf.low, and conf.high or if
@@ -130,17 +127,17 @@ dispersion model
 \eqn{\varepsilon(\theta,\nu_{\psi})}{\varepsilon(\theta,\nu_(\psi))}, where
 \eqn{\theta} is the canonical parameter and \eqn{\nu_{\psi}}{\nu_(\psi)} is
 the structure measure. Then it follows from the central limit theorem that
-\deqn{hat(\beta)\sim N(\beta, (X^TWX)^{-1})}{%
-  hat(\beta)~N(\beta, (X^TWX)^(-1))}
+\deqn{\hat\beta\sim N(\beta, (X^TWX)^{-1})}{%
+  \hat\beta~N(\beta, (X^TWX)^(-1))}
 will be a good approximation in large samples, where \eqn{X^TWX} is the
 Fisher information of the exponential dispersion model.
 
 From this, the combinant
-\deqn{(hat(\beta)-\beta)^TX^TWX(hat(\beta)-\beta)}{%
-  (hat(\beta)-\beta)^TX^TWX(hat(\beta)-\beta)}
+\deqn{(\hat\beta-\beta)^TX^TWX(\hat\beta-\beta)}{%
+  (\hat\beta-\beta)^TX^TWX(\hat\beta-\beta)}
 is an approximate pivot, with a \eqn{\chi_p^2} distribution. Then
-\deqn{C_{\beta}=\{\beta|(hat(\beta)-\beta)^TX^TWX(hat(\beta)-\beta)<\chi_p^2(1-\alpha)\}}{%
-  C_(\beta)=\{\beta|(hat(\beta)-\beta)^TX^TWX(hat(\beta)-\beta)<\chi_p^2(1-\alpha)\}}
+\deqn{C_{\beta}=\{\beta|(\hat\beta-\beta)^TX^TWX(\hat\beta-\beta)<\chi_p^2(1-\alpha)\}}{%
+  C_(\beta)=\{\beta|(\hat\beta-\beta)^TX^TWX(\hat\beta-\beta)<\chi_p^2(1-\alpha)\}}
 is an approximate \eqn{(1-\alpha)}-confidence set for the parameter vector
 \eqn{\beta}. Similarly, confidence sets for sub-vectors of \eqn{\beta} can
 be obtained by the fact that marginal distributions of normal distributions
@@ -154,20 +151,43 @@ Note this is a conservative confidence set, since parameters outside the
 confidence set of \eqn{\beta} can be mapped to the confidence set of the
 transformed parameter.
 
-To determine \eqn{C_{\beta}}, \code{fct_confint()} finds the boundary by taking
-a number of points around \eqn{hat(\beta)} and projecting them onto the
-boundary. Therefore, the confidence set of the transformed parameter will
-only be valid if the boundary of \eqn{C_{\beta}} is mapped to the boundary
-of the confidence set for the transformed parameter.
+To determine \eqn{C_{\beta}}, \code{fct_confint()} uses a convex optimization
+program when f is follows DCP rules. Otherwise, it finds the boundary by
+taking a number of points around \eqn{\hat\beta} and projecting them onto
+the boundary. In this case, the confidence set of the transformed parameter
+will only be valid if the boundary of \eqn{C_{\beta}} is mapped to the
+boundary of the confidence set for the transformed parameter.
 
 The points projected to the boundary are either laid out in a grid around
-\eqn{hat(\beta)}, with the number of points in each direction determined
+\eqn{\hat\beta}, with the number of points in each direction determined
 by \code{n_grid}, or uniformly at random on a hypersphere, with the number of
 points determined by \code{k}. The radius of the grid/sphere is determined by
 \code{len}.
+
+To print a progress bar with information about the fitting process, wrap
+the call to fct_confint in with_progress, i.e.
+\code{progressr::with_progress({result <- fct_confint(object, f)})}
 }
 \examples{
-1+1
+data <- 1:5 |>
+  purrr::map(
+    \(x) {
+      name = paste0("cov", x);
+      dplyr::tibble("{name}" := rnorm(100, 1))
+    }
+  ) |>
+  purrr::list_cbind() |>
+  dplyr::mutate(
+  y = rowSums(dplyr::across(dplyr::everything())) + rnorm(100)
+  )
+lm <- lm(
+ as.formula(
+  paste0("y ~ 0 + ", paste0(names(data)[names(data) != "y"], collapse = " + "))
+ ),
+ data
+)
+fct_confint(lm, sum)
+fct_confint(lm, sum, which_parm = 1:3, level = 0.5)
 
 }
 \author{

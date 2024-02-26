@@ -1,26 +1,24 @@
 #' EpiForsk
 #'
-#' This is a collection of assorted functions and examples collected from
-#' various projects. Currently we have functionalities for simplifying
+#' This is a collection of assorted functions and examples collected
+#' from various projects. Currently we have functionalities for simplifying
 #' overlapping time intervals, Charlson comorbidity score constructors for
-#' Danish data, sibling design linear regression functionalities, and a method
-#' for calculating the confidence intervals for functions of parameters from a
-#' GLM.
+#' Danish data, getting frequency for multiple variables, getting standardized
+#' output from logistic and log-linear regressions, sibling design linear
+#' regression functionalities a method for calculating the confidence intervals
+#' for functions of parameters from a GLM, Bayes equivalent for hypothesis
+#' testing with asymptotic Bayes factor, and several help functions for
+#' generalized random forest analysis using the grf package.
 #'
-#' In the package there are contributions from
-#' \itemize{
-#'   \item{ADLS : }{Anna Damkjær Laksafoss (https://orcid.org/0000-0002-9898-2924)}
-#'   \item{ANDH : }{Anders Husby (https://orcid.org/0000-0002-7634-8455)}
-#'   \item{ASO  : }{Mikael Andersson}
-#'   \item{EMTH : }{Emilia Myrup Thiesson}
-#'   \item{KIJA : }{Kim Daniel Jakobsen}
-#' }
-#'
-#' @importFrom rlang .data
+#' @importFrom gridExtra arrangeGrob
+#' @importFrom methods hasArg
+#' @importFrom dplyr .data
 #' @importFrom rlang :=
-#' @importFrom foreach foreach
-#' @importFrom foreach %dopar%
-#' @importFrom doParallel registerDoParallel
+#' @importFrom survey svyglm
+#' @importFrom survival coxph
+#' @importFrom survival strata
+#' @importFrom survival Surv
+#' @importFrom utils install.packages
 #' @import stats
 "_PACKAGE"
 
@@ -35,6 +33,13 @@ malicious_compliance <- function() {
 }
 
 globalVariables(c("y"))
+globalVariables(c(".SD"))
+globalVariables(c(".N"))
 
+#' make package data table aware
+#'
+#' This package uses data.table as a fast alternative to dplyr in cases where
+#' performance is essential.
+#'
 #' @export
 .datatable.aware = TRUE

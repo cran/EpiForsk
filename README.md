@@ -1,4 +1,11 @@
-# EpiForsk
+# EpiForsk <img src="man/figures/Logo_EpiForsk.png" align="right" height="300" />
+
+<!-- badges: start -->
+[![CRANstatus](https://www.r-pkg.org/badges/version/EpiForsk)](https://cran.r-project.org/package=EpiForsk)
+[![R-CMD-check](https://github.com/Laksafoss/EpiForsk/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Laksafoss/EpiForsk/actions/workflows/R-CMD-check.yaml)
+![CRAN Downloads overall](https://cranlogs.r-pkg.org/badges/grand-total/EpiForsk)
+<!-- badges: end -->
+
 This package is a framework for sharing guides, examples, and functions here at 
 EpiForsk. It is primarily managed by ADLS and KIJA, but is intended to be a 
 collaborative effort and we encourage sharing your hard earned code snippets.  
@@ -14,7 +21,7 @@ library("EpiForsk")
 ```
 
 ## Availability
-Only on github so far. We hope to upload to CRAN soon :) 
+The package is available on [CRAN](https://CRAN.R-project.org/package=EpiForsk).
 
 ## What is already in the package
 The package is (hopefully) constantly under development, and to see all content

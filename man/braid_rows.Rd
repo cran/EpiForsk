@@ -14,7 +14,7 @@ elements must be bound together row-wise.}
 A list of \code{data.frame}s with the combined information from the inputted list.
 }
 \description{
-Row binds the matching innermost dataframes in a list of lists. This is
+Row binds the matching innermost data frames in a list of lists. This is
 essentially a list inversion \code{\link[purrr:list_transpose]{purrr::list_transpose()}} with row-binding
 \code{\link[dplyr:bind_rows]{dplyr::bind_rows()}}
 }

@@ -1,6 +1,6 @@
 #' Bind lists of list of multiple data frames by row
 #'
-#' Row binds the matching innermost dataframes in a list of lists. This is
+#' Row binds the matching innermost data frames in a list of lists. This is
 #' essentially a list inversion [`purrr::list_transpose()`] with row-binding
 #' [`dplyr::bind_rows()`]
 #'
@@ -47,50 +47,34 @@
 #'
 #' @export
 braid_rows <- function(list) {
+  ulist <- unlist(list, recursive = FALSE)
+  if (is.null(names(ulist))) {
+    template <- seq_len(max(lengths(list)))
+  } else if (any(names(ulist) == "")) {
+    template <- seq_len(max(lengths(list)))
+    message("Some data frames are unnamed. braiding by location in inner list.")
+  } else {
+    template <- unique(names(ulist))
+  }
 
   # checking input is data frame based
   if (
     !all(
       sapply(
-        unlist(list, recursive = FALSE),
+        ulist,
         function(ls) inherits(ls, "data.frame")
       )
     )
   ) {
-    stop("All elemtents must be dataframes")
+    stop("All elements must be data frames")
   }
 
-  if (all(diff(sapply(list, length)) == 0)) {   # the simple rectangular case
-    return(
-      purrr::list_transpose(list, simplify = FALSE) |>
-        lapply(function(ls) ls |> dplyr::bind_rows())
-    )
-  } else {   # the jagged case
-    # find the new list structure
-    nam <- unique(unlist(lapply(list, function(ls) names(ls))))
-    if (is.null(nam)) {
-      nam <- 1:max(unlist(lapply(list, function(ls) length(ls))))
-    } else {
-      names(nam) <- nam
-    }
-
-    # loop, extract, and bind over new structure
-    return(lapply(nam, function(na) {
-      lapply(list, function(ls) {
-        if (is.character(na)) {
-          return(ls[[na]])
-        } else if (na <= length(ls)) {
-          return(ls[[na]])
-        } else {
-          return(NULL)
-        }
-      }) |> dplyr::bind_rows()
-    })
-    )
-  }
+  return(
+    purrr::list_transpose(
+      list,
+      template = template,
+      simplify = FALSE
+      ) |>
+      lapply(function(ls) ls |> dplyr::bind_rows())
+  )
 }
-
-
-
-
-

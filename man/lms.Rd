@@ -47,7 +47,7 @@ specific intercept and \eqn{x_{ij_i}}{\%x_(ij_i)} are covariate values for
 observation \eqn{j_i}{\%j_i} in group i.
 \eqn{\varepsilon_{ij_i}\sim N(0, \sigma^2)}{\%\varepsilon_(ij_i)~N(0, \sigma^2)}
 is a normally distributed error term. It is assumed that interest is in
-estimating the vector \eqn{\beta}{\%\beta} while \eqn{\alpha_{ij_i}}{\%\alpha_(ij_i)}
+estimating the vector \eqn{\beta}{\%\beta} while \eqn{\alpha_{i}}{\%\alpha_(i)}
 are nuisance parameters. Estimation of \eqn{\beta} uses the mean deviation
 method, where
 \deqn{y_{ij_i}^{'}=y_{ij_i}-y_i}{y_(ij_i)^(')=y_(ij_i)-y_i}
