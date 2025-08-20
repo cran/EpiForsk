@@ -16,6 +16,14 @@ for functions of parameters from a GLM, Bayes equivalent for hypothesis
 testing with asymptotic Bayes factor, and several help functions for
 generalized random forest analysis using the grf package.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/Laksafoss/EpiForsk}
+  \item Report bugs at \url{https://github.com/Laksafoss/EpiForsk/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Kim Daniel Jakobsen \email{kija@ssi.dk} (\href{https://orcid.org/0000-0003-0086-9980}{ORCID})
 

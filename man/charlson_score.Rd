@@ -19,21 +19,21 @@ charlson_score(
 diagnosis codes. The data should be in the long format (only one variable
 with diagnoses, but several lines per person is OK).}
 
-\item{Person_ID}{<\code{\link[=dplyr_data_masking]{data-masking}}> An unquoted
+\item{Person_ID}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> An unquoted
 expression naming the id variable in \code{data}. This variable must always be
 specified.}
 
-\item{diagnosis_variable}{<\code{\link[=dplyr_data_masking]{data-masking}}> An unquoted
+\item{diagnosis_variable}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> An unquoted
 expression naming the diagnosis variable in \code{data}. This variable must
 always be specified.}
 
-\item{time_variable}{<\code{\link[=dplyr_data_masking]{data-masking}}> An unquoted
+\item{time_variable}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> An unquoted
 expression naming the diagnosis time variable in \code{data} if needed. The
 \code{time_variable} must be in a date format.
 
 When \code{time_variable} is specified, \code{end_date} must also be specified.}
 
-\item{end_date}{<\code{\link[=dplyr_data_masking]{data-masking}}> An unquoted
+\item{end_date}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> An unquoted
 expression naming the end of time-period to search for relevant diagnoses
 or a single date specifying the end date. If \code{end_date} names a variable,
 this variable must be in a date format.}

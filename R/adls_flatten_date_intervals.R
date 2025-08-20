@@ -4,13 +4,13 @@
 #'
 #' @param data A data frame, data frame extension (e.g. a tibble), or a lazy
 #'   data frame (e.g. from dbplyr or dtplyr).
-#' @param id <[`tidy-select`][dplyr_tidy_select]> One or more unquoted
+#' @param id <[`tidy-select`][dplyr::dplyr_tidy_select]> One or more unquoted
 #'   expression naming the id variables in data.
-#' @param in_date <[`data-masking`][dplyr_data_masking]> One unquoted
+#' @param in_date <[`data-masking`][dplyr::dplyr_data_masking]> One unquoted
 #'   expressions naming the start date variable in data.
-#' @param out_date <[`data-masking`][dplyr_data_masking]> One unquoted
+#' @param out_date <[`data-masking`][dplyr::dplyr_data_masking]> One unquoted
 #'   expression naming the end date variable in data.
-#' @param status <[`tidy-select`][dplyr_tidy_select]> One or more unquoted
+#' @param status <[`tidy-select`][dplyr::dplyr_tidy_select]> One or more unquoted
 #'   expressions naming a status variable in data, such as region or
 #'   hospitalization reason.
 #' @param overlap_handling A character naming the method for handling overlaps

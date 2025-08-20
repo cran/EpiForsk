@@ -5,12 +5,12 @@
 #' @param formula A formula, used to create a model matrix with demeaned columns.
 #' @param data A data frame, data frame extension (e.g. a tibble), or a lazy
 #' data frame (e.g. from dbplyr or dtplyr).
-#' @param grp_id <[`data-masking`][dplyr_data_masking]> One unquoted expression
+#' @param grp_id <[`data-masking`][dplyr::dplyr_data_masking]> One unquoted expression
 #' naming the id variable in data defining the groups to demean,
 #' e.g. sibling groups.
-#' @param obs_id <[`data-masking`][dplyr_data_masking]> Optional, One unquoted
+#' @param obs_id <[`data-masking`][dplyr::dplyr_data_masking]> Optional, One unquoted
 #' expression naming an id variable to keep track of the input data order.
-#' @param ... Additional arguments to be passed to \link[stats]{lm}(). In print,
+#' @param ... Additional arguments to be passed to [lm][stats::lm()]. In print,
 #' additional arguments are ignored without warning.
 #'
 #' @returns

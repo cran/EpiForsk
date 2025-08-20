@@ -6,18 +6,18 @@
 #' @param data A data.frame with at least an id variable and a variable with all
 #'   diagnosis codes. The data should be in the long format (only one variable
 #'   with diagnoses, but several lines per person is OK).
-#' @param Person_ID <[`data-masking`][dplyr_data_masking]> An unquoted
+#' @param Person_ID <[`data-masking`][dplyr::dplyr_data_masking]> An unquoted
 #'    expression naming the id variable in `data`. This variable must always be
 #'    specified.
-#' @param diagnosis_variable <[`data-masking`][dplyr_data_masking]> An unquoted
+#' @param diagnosis_variable <[`data-masking`][dplyr::dplyr_data_masking]> An unquoted
 #'    expression naming the diagnosis variable in `data`. This variable must
 #'    always be specified.
-#' @param time_variable <[`data-masking`][dplyr_data_masking]> An unquoted
+#' @param time_variable <[`data-masking`][dplyr::dplyr_data_masking]> An unquoted
 #'    expression naming the diagnosis time variable in `data` if needed. The
 #'    `time_variable` must be in a date format.
 #'
 #'    When `time_variable` is specified, `end_date` must also be specified.
-#' @param end_date <[`data-masking`][dplyr_data_masking]> An unquoted
+#' @param end_date <[`data-masking`][dplyr::dplyr_data_masking]> An unquoted
 #'    expression naming the end of time-period to search for relevant diagnoses
 #'    or a single date specifying the end date. If `end_date` names a variable,
 #'    this variable must be in a date format.

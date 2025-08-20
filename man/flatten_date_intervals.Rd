@@ -18,16 +18,16 @@ flatten_date_intervals(
 \item{data}{A data frame, data frame extension (e.g. a tibble), or a lazy
 data frame (e.g. from dbplyr or dtplyr).}
 
-\item{id}{<\code{\link[=dplyr_tidy_select]{tidy-select}}> One or more unquoted
+\item{id}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> One or more unquoted
 expression naming the id variables in data.}
 
-\item{in_date}{<\code{\link[=dplyr_data_masking]{data-masking}}> One unquoted
+\item{in_date}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> One unquoted
 expressions naming the start date variable in data.}
 
-\item{out_date}{<\code{\link[=dplyr_data_masking]{data-masking}}> One unquoted
+\item{out_date}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> One unquoted
 expression naming the end date variable in data.}
 
-\item{status}{<\code{\link[=dplyr_tidy_select]{tidy-select}}> One or more unquoted
+\item{status}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> One or more unquoted
 expressions naming a status variable in data, such as region or
 hospitalization reason.}
 

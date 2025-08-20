@@ -4,7 +4,7 @@
 #'
 #' @param df A data frame, data frame extension (e.g. a tibble), or a lazy data
 #'   frame (e.g. from dbplyr or dtplyr).
-#' @param factors <[`tidy-select`][dplyr_tidy_select]> One or more unquoted
+#' @param factors <[`tidy-select`][dplyr::dplyr_tidy_select]> One or more unquoted
 #'   expressions naming factors in df to one-hot encode.
 #'
 #' @returns Data frame with one-hot encoded factors. One-hot encoded columns

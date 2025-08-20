@@ -66,9 +66,16 @@
 #'   points determined by `k`. The radius of the grid/sphere is determined by
 #'   `len`.
 #'
+#'  @section Progress bar:
+#'
 #'   To print a progress bar with information about the fitting process, wrap
 #'   the call to fct_confint in with_progress, i.e.
 #'   `progressr::with_progress({result <- fct_confint(object, f)})`
+#'
+#'  @section Specifying a plan to resolve futures:
+#'
+#'   `fct_confint()` uses futures to enable parallel processing. Use the
+#'   `future::plan()` function to specify how futures are resolved.
 #'
 #' @author
 #' KIJA
@@ -103,36 +110,14 @@ fct_confint <- function(
     level = 0.95,
     ...
 ) {
-  p1 <- requireNamespace("future", quietly = TRUE)
-  p2 <- requireNamespace("furrr", quietly = TRUE)
-  if (!all(c(p1, p2))) {
-    mp <- c("future", "furrr")[!c(p1, p2)]
-    if (interactive()) {
-      for (i in 1:3) {
-        input <- readline(glue::glue(
-          "'fct_confint' requires packages {mp} to be installed.\n",
-          "Attempt to install packages from CRAN? (y/n)"
-        ))
-        if (input == "y") {
-          install.packages(
-            pkgs = mp,
-            repos = "https://cloud.r-project.org"
-          )
-          p1 <- requireNamespace("future", quietly = TRUE)
-          p2 <- requireNamespace("furrr", quietly = TRUE)
-          if (!all(c(p1, p2))) {
-            stop("Failed to install required packages.")
-          }
-          break
-        } else if (input == "n") {
-          stop(glue::glue("'fct_confint' requires packages {mp} to be installed."))
-        }
-        if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-      }
-    } else {
-      stop(glue::glue("'fct_confint' requires packages {mp} to be installed."))
-    }
-  }
+  stopifnot(
+    "'fct_confint' requires package 'future' to be installed." =
+      requireNamespace("future", quietly = TRUE)
+  )
+  stopifnot(
+    "'fct_confint' requires package 'furrr' to be installed." =
+      requireNamespace("furrr", quietly = TRUE)
+  )
   UseMethod("fct_confint")
 }
 
@@ -149,13 +134,6 @@ fct_confint <- function(
 #'   uniformly from a sphere.
 #' @param len numeric, the radius of the sphere or box used to define directions
 #'   in which to look for boundary points of the parameter confidence set.
-#' @param parallel Character, specify how futures are resolved. Default is
-#' "sequential". Can be "multisession" to resolve in parallel in separate R
-#' sessions, "multicore" (not supported on Windows) to resolve in parallel in
-#' forked R processes, or "cluster" to resolve in parallel in separate R
-#' sessions running on one or more machines.
-#' @param n_cores An integer specifying the number of threads to use for
-#'   parallel computing.
 #'
 #' @export
 
@@ -168,8 +146,6 @@ fct_confint.lm <- function(
     n_grid = NULL,
     k = NULL,
     len = 0.1,
-    parallel = c("sequential", "multisession", "multicore", "cluster"),
-    n_cores = 10L,
     ...
 ) {
   ### check input
@@ -240,50 +216,12 @@ fct_confint.lm <- function(
     "len must be a number greater than 0" =
       is.numeric(len) && length(len) == 1 && len > 0
   )
-  # check parallel is a valid character string
-  parallel <- match.arg(parallel)
-
-  ### request installation of required packages from suggested
-  if (parallel != "sequential") {
-    p1 <- requireNamespace("parallel", quietly = TRUE)
-    if (!p1) {
-      if (interactive()) {
-        for (i in 1:3) {
-          input <- readline(paste0(
-            "'parallel=TRUE' requires package 'parallel' to be installed.\n",
-            "Attempt to install packages from CRAN? (y/n)"
-          ))
-          if (input == "y") {
-            install.packages(
-              pkgs = "parallel",
-              repos = "https://cloud.r-project.org"
-            )
-            p1 <- requireNamespace("parallel", quietly = TRUE)
-            if (!p1) {
-              stop("Failed to install required packages.")
-            }
-            break
-          } else if (input == "n") {
-            stop("When 'parallel=TRUE', package 'parallel' is required.")
-          }
-          if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-        }
-      } else {
-        stop("When 'parallel=TRUE', package 'parallel' is required.")
-      }
-    }
-  }
-
-  ### Initialize parallel clusters if needed
-  if (parallel != "sequential") {
-    nCores <- min(
-      parallel::detectCores() - 1,
-      n_cores
+  # check if convex optimizer is needed
+  if ((is.null(n_grid) || any(n_grid) == 0L) && (is.null(k) || k == 0L)) {
+    stopifnot(
+      "'fct_confint.lm' requires package 'CVXR' to be installed unless 'n_grid' or 'k' are specified." =
+        requireNamespace("CVXR", quietly = TRUE)
     )
-    future::plan(parallel, workers = nCores)
-    on.exit(future::plan("sequential"))
-  } else {
-    future::plan(parallel)
   }
 
   ### extract MLE parameters
@@ -314,38 +252,7 @@ fct_confint.lm <- function(
     # wraps the call to fct_confint in with_progress()
     pb <- progressr::progressor(steps = n_fout)
 
-    ### request installation of required package from suggested
-    if (is.null(n_grid) && is.null(k)) {
-      p1 <- requireNamespace("CVXR", quietly = TRUE)
-      if (!p1) {
-        if (interactive()) {
-          for (i in 1:3) {
-            input <- readline(glue::glue(
-              "package 'CVXR' must be installed when 'n_grid' and 'k' are NULL.\n",
-              "Attempt to install package from CRAN? (y/n)"
-            ))
-            if (input == "y") {
-              install.packages(
-                pkgs = "CVXR",
-                repos = "https://cloud.r-project.org"
-              )
-              p1 <- requireNamespace("CVXR", quietly = TRUE)
-              if (!p1) {
-                stop("Failed to install required package.")
-              }
-              break
-            } else if (input == "n") {
-              stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-            }
-            if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-          }
-        } else {
-          stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-        }
-      }
-    }
-
-    # run optimizer, either in parallel or in series
+    # run optimizer using the user specified future plan
     env <- parent.frame()
     tryCatch(
       {
@@ -423,12 +330,8 @@ fct_confint.lm <- function(
     qchisq(level, length(beta_hat[which_parm])),
     ncol(delta)
   )
-  suppressWarnings(
-    alpha1 <- -sqrt(c / a)
-  )
-  suppressWarnings(
-    alpha2 <- sqrt(c / a)
-  )
+  suppressWarnings({alpha1 <- -sqrt(c / a)})
+  suppressWarnings({alpha2 <- sqrt(c / a)})
   # remove delta values that lead to complex solutions
   which_alpha <- which(!(is.nan(alpha1) | is.infinite(alpha1)))
   alpha1 <- alpha1[which_alpha]
@@ -464,7 +367,7 @@ fct_confint.lm <- function(
       ) * delta_red
     )
   colnames(beta_2) <- names(beta_hat)[which_parm]
-  suppressMessages(
+  suppressMessages({
     ci_data_1 <- lapply(
       seq_len(nrow(beta_1)),
       function(x) f(beta_1[x, ])
@@ -478,8 +381,8 @@ fct_confint.lm <- function(
           estimate = f(beta_hat[which_parm])
         )
       )
-  )
-  suppressMessages(
+  })
+  suppressMessages({
     ci_data_2 <- lapply(
       seq_len(nrow(beta_2)),
       function(x) f(beta_2[x, ])
@@ -488,7 +391,7 @@ fct_confint.lm <- function(
         names = paste0("ci_bound_", seq_len(nrow(beta_2)) + nrow(beta_1))
       ) |>
       dplyr::as_tibble()
-  )
+  })
   # combine negative and positive solutions
   ci_data <- dplyr::bind_cols(ci_data_1, ci_data_2) |>
     dplyr::select("estimate", dplyr::everything())
@@ -519,8 +422,6 @@ fct_confint.glm <- function(
     n_grid = NULL,
     k = NULL,
     len = 0.1,
-    parallel = c("sequential", "multisession", "multicore", "cluster"),
-    n_cores = 10L,
     ...
 ) {
   ### check input
@@ -593,51 +494,12 @@ fct_confint.glm <- function(
     "len must be a number greater than 0" =
       is.numeric(len) && length(len) == 1 && len > 0
   )
-
-  # check parallel is a valid character string
-  parallel <- match.arg(parallel)
-
-  ### request installation of required packages from suggested
-  if (parallel != "sequential") {
-    p1 <- requireNamespace("parallel", quietly = TRUE)
-    if (!p1) {
-      if (interactive()) {
-        for (i in 1:3) {
-          input <- readline(paste0(
-            "'parallel=TRUE' requires package 'parallel' to be installed.\n",
-            "Attempt to install packages from CRAN? (y/n)"
-          ))
-          if (input == "y") {
-            install.packages(
-              pkgs = "parallel",
-              repos = "https://cloud.r-project.org"
-            )
-            p1 <- requireNamespace("parallel", quietly = TRUE)
-            if (!p1) {
-              stop("Failed to install required packages.")
-            }
-            break
-          } else if (input == "n") {
-            stop("When 'parallel=TRUE', package 'parallel' is required.")
-          }
-          if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-        }
-      } else {
-        stop("When 'parallel=TRUE', package 'parallel' is required.")
-      }
-    }
-  }
-
-  ### Initialize parallel clusters if needed
-  if (parallel != "sequential") {
-    nCores <- min(
-      parallel::detectCores() - 1,
-      n_cores
+  # check if convex optimizer is needed
+  if ((is.null(n_grid) || any(n_grid) == 0L) && (is.null(k) || k == 0L)) {
+    stopifnot(
+      "'fct_confint.lm' requires package 'CVXR' to be installed unless 'n_grid' or 'k' are specified." =
+        requireNamespace("CVXR", quietly = TRUE)
     )
-    future::plan(parallel, workers = nCores)
-    on.exit(future::plan("sequential"))
-  } else {
-    future::plan(parallel)
   }
 
   ### extract MLE parameters
@@ -663,38 +525,7 @@ fct_confint.glm <- function(
     # wraps the call to fct_confint in with_progress()
     pb <- progressr::progressor(steps = n_fout)
 
-    ### request installation of required package from suggested
-    if (is.null(n_grid) && is.null(k)) {
-      p1 <- requireNamespace("CVXR", quietly = TRUE)
-      if (!p1) {
-        if (interactive()) {
-          for (i in 1:3) {
-            input <- readline(glue::glue(
-              "package 'CVXR' must be installed when 'n_grid' and 'k' are NULL.\n",
-              "Attempt to install package from CRAN? (y/n)"
-            ))
-            if (input == "y") {
-              install.packages(
-                pkgs = "CVXR",
-                repos = "https://cloud.r-project.org"
-              )
-              p1 <- requireNamespace("CVXR", quietly = TRUE)
-              if (!p1) {
-                stop("Failed to install required package.")
-              }
-              break
-            } else if (input == "n") {
-              stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-            }
-            if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-          }
-        } else {
-          stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-        }
-      }
-    }
-
-    # run optimizer, either in parallel or in series
+    # run optimizer using the user specified future plan
     env <- parent.frame()
     tryCatch(
       {
@@ -754,14 +585,13 @@ fct_confint.glm <- function(
 
   # create progress bar with progressr. To display a progress bar the user
   # wraps the call to fct_confint in with_progress()
-  pb <- progressr::progressor(steps = n_fout)
+  pb <- progressr::progressor(steps = ncol(delta))
 
   ### solve equation for scaling points to end up on boundary of confidence set
   a <- furrr::future_map_dbl(
     .x = seq_len(ncol(delta)),
     .options = furrr::furrr_options(
-      globals = c("delta", "xtx_red", "pb", "ci_fct"),
-      seed = TRUE
+      globals = c("delta", "xtx_red", "pb", "ci_fct")
     ),
     .f = \(i) {
       pb()
@@ -773,19 +603,14 @@ fct_confint.glm <- function(
     qchisq(level, length(beta_hat[which_parm])),
     ncol(delta)
   )
-  suppressWarnings(
-    alpha1 <- -sqrt(c / a)
-  )
-  suppressWarnings(
-    alpha2 <- sqrt(c / a)
-  )
+  suppressWarnings({alpha1 <- -sqrt(c / a)})
+  suppressWarnings({alpha2 <- sqrt(c / a)})
   # remove delta values that lead to complex solutions
   which_alpha <- which(!(is.nan(alpha1) | is.infinite(alpha1)))
   alpha1 <- alpha1[which_alpha]
   alpha2 <- alpha2[which_alpha]
   delta_red <- delta[, which_alpha, drop = FALSE]
   cat("points on the boundary:", 2 * length(which_alpha), "\n")
-
 
   # determine coefficient values on boundary of confidence set
   beta_1 <- matrix(
@@ -816,7 +641,7 @@ fct_confint.glm <- function(
       ) * delta_red
     )
   colnames(beta_2) <- names(beta_hat)[which_parm]
-  suppressMessages(
+  suppressMessages({
     ci_data_1 <- lapply(
       seq_len(nrow(beta_1)),
       function(x) f(beta_1[x, ])
@@ -830,8 +655,8 @@ fct_confint.glm <- function(
           estimate = f(beta_hat[which_parm])
         )
       )
-  )
-  suppressMessages(
+  })
+  suppressMessages({
     ci_data_2 <- lapply(
       seq_len(nrow(beta_2)),
       function(x) f(beta_2[x, ])
@@ -840,7 +665,7 @@ fct_confint.glm <- function(
         names = paste0("ci_bound_", seq_len(nrow(beta_2)) + nrow(beta_1))
       ) |>
       dplyr::as_tibble()
-  )
+  })
   # combine negative and positive solutions
   ci_data <- dplyr::bind_cols(ci_data_1, ci_data_2) |>
     dplyr::select("estimate", dplyr::everything())
@@ -868,16 +693,14 @@ fct_confint.lms <- function(
     which_parm = rep(TRUE, length(coef(object))),
     level = 0.95,
     return_beta = FALSE,
+    n_grid = NULL,
+    k = NULL,
     len = 0.1,
-    n_grid = 0L,
-    k = 1000L,
-    parallel = c("sequential", "multisession", "multicore", "cluster"),
-    n_cores = 10,
     ...
 ) {
   ### check input
   # check object class
-  stopifnot("object must inherit from class 'lm'" = inherits(object, "lm"))
+  stopifnot("object must inherit from class 'lms'" = inherits(object, "lms"))
   # check f is a function
   stopifnot("f must be a function" = is.function(f))
   # convert which_parm to a logical vector
@@ -943,51 +766,12 @@ fct_confint.lms <- function(
     "len must be a number greater than 0" =
       is.numeric(len) && length(len) == 1 && len > 0
   )
-
-  # check parallel is a valid character string
-  parallel <- match.arg(parallel)
-
-  ### request installation of required packages from suggested
-  if (parallel != "sequential") {
-    p1 <- requireNamespace("parallel", quietly = TRUE)
-    if (!p1) {
-      if (interactive()) {
-        for (i in 1:3) {
-          input <- readline(paste0(
-            "'parallel=TRUE' requires package 'parallel' to be installed.\n",
-            "Attempt to install packages from CRAN? (y/n)"
-          ))
-          if (input == "y") {
-            install.packages(
-              pkgs = "parallel",
-              repos = "https://cloud.r-project.org"
-            )
-            p1 <- requireNamespace("parallel", quietly = TRUE)
-            if (!p1) {
-              stop("Failed to install required packages.")
-            }
-            break
-          } else if (input == "n") {
-            stop("When 'parallel=TRUE', package 'parallel' is required.")
-          }
-          if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-        }
-      } else {
-        stop("When 'parallel=TRUE', package 'parallel' is required.")
-      }
-    }
-  }
-
-  ### Initialize parallel clusters if needed
-  if (parallel != "sequential") {
-    nCores <- min(
-      parallel::detectCores() - 1,
-      n_cores
+  # check if convex optimizer is needed
+  if ((is.null(n_grid) || any(n_grid) == 0L) && (is.null(k) || k == 0L)) {
+    stopifnot(
+      "'fct_confint.lm' requires package 'CVXR' to be installed unless 'n_grid' or 'k' are specified." =
+        requireNamespace("CVXR", quietly = TRUE)
     )
-    future::plan(parallel, workers = nCores)
-    on.exit(future::plan("sequential"))
-  } else {
-    future::plan(parallel)
   }
 
   ### extract MLE parameters
@@ -1018,38 +802,7 @@ fct_confint.lms <- function(
     # wraps the call to fct_confint in with_progress()
     pb <- progressr::progressor(steps = n_fout)
 
-    ### request installation of required package from suggested
-    if (is.null(n_grid) && is.null(k)) {
-      p1 <- requireNamespace("CVXR", quietly = TRUE)
-      if (!p1) {
-        if (interactive()) {
-          for (i in 1:3) {
-            input <- readline(glue::glue(
-              "package 'CVXR' must be installed when 'n_grid' and 'k' are NULL.\n",
-              "Attempt to install package from CRAN? (y/n)"
-            ))
-            if (input == "y") {
-              install.packages(
-                pkgs = "CVXR",
-                repos = "https://cloud.r-project.org"
-              )
-              p1 <- requireNamespace("CVXR", quietly = TRUE)
-              if (!p1) {
-                stop("Failed to install required package.")
-              }
-              break
-            } else if (input == "n") {
-              stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-            }
-            if (i == 3) stop("Failed to answer 'y' or 'n' to many times.")
-          }
-        } else {
-          stop("When 'n_grid' and 'k' are NULL, package 'CVXR' is required.")
-        }
-      }
-    }
-
-    # run optimizer, either in parallel or in series
+    # run optimizer using the user specified future plan
     env <- parent.frame()
     tryCatch(
       {
@@ -1109,7 +862,7 @@ fct_confint.lms <- function(
 
   # create progress bar with progressr. To display a progress bar the user
   # wraps the call to fct_confint in with_progress()
-  pb <- progressr::progressor(steps = n_fout)
+  pb <- progressr::progressor(steps = ncol(delta))
 
   ### solve equation for scaling points to end up on boundary of confidence set
   a <- furrr::future_map_dbl(
@@ -1127,12 +880,8 @@ fct_confint.lms <- function(
     qchisq(level, length(beta_hat[which_parm])),
     ncol(delta)
   )
-  suppressWarnings(
-    alpha1 <- -sqrt(c / a)
-  )
-  suppressWarnings(
-    alpha2 <- sqrt(c / a)
-  )
+  suppressWarnings({alpha1 <- -sqrt(c / a)})
+  suppressWarnings({alpha2 <- sqrt(c / a)})
   # remove delta values that lead to complex solutions
   which_alpha <- which(!(is.nan(alpha1) | is.infinite(alpha1)))
   alpha1 <- alpha1[which_alpha]
@@ -1168,7 +917,7 @@ fct_confint.lms <- function(
       ) * delta_red
     )
   colnames(beta_2) <- names(beta_hat)[which_parm]
-  suppressMessages(
+  suppressMessages({
     ci_data_1 <- lapply(
       seq_len(nrow(beta_1)),
       function(x) f(beta_1[x, ])
@@ -1182,8 +931,8 @@ fct_confint.lms <- function(
           estimate = f(beta_hat[which_parm])
         )
       )
-  )
-  suppressMessages(
+  })
+  suppressMessages({
     ci_data_2 <- lapply(
       seq_len(nrow(beta_2)),
       function(x) f(beta_2[x, ])
@@ -1192,7 +941,7 @@ fct_confint.lms <- function(
         names = paste0("ci_bound_", seq_len(nrow(beta_2)) + nrow(beta_1))
       ) |>
       dplyr::as_tibble()
-  )
+  })
   # combine negative and positive solutions
   ci_data <- dplyr::bind_cols(ci_data_1, ci_data_2) |>
     dplyr::select("estimate", dplyr::everything())

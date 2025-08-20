@@ -126,63 +126,159 @@ odds_ratio_function_repeated <- function(
     textvar = NULL,
     model_object = FALSE
 ) {
+  ### Start of Input checks
+  if (missing(normaldata) || !inherits(normaldata, "data.frame")) {
+    stop("'normaldata' must be a data frame.")
+  }
+  if (missing(outcomevar) || !is.character(outcomevar)) {
+    stop(
+      "'outcomevar' must be a character vector naming factor ",
+      "variables in 'normaldata' to use as outcomes in separate models."
+    )
+  }
+  if (missing(expvars) || !is.character(expvars)) {
+    stop(
+      "'expvars' must be a character vector specifying exposure variables ",
+      "(either numeric or factors) to use in separate models."
+    )
+  }
+  if (!(is.null(adjustment_fixed) || is.character(adjustment_fixed))) {
+    stop(
+      "'adjustment_fixed' must be a character vector naming adjustment ",
+      "variables to include in all models\n or NULL (the default) for no ",
+      "fixed adjustment."
+    )
+  }
+  if (!(is.null(by_var) || (is.character(by_var) && length(by_var) == 1))) {
+    stop(
+      "'by_var' must be a character vector specifying a factor on which to ",
+      "run the analyses completely separate for all levels,\n or NULL (the ",
+      "default) for no stratification."
+    )
+  }
+  if (!inherits(number_decimals, "numeric") || number_decimals < 0) {
+    stop("'number_decimals' must be a non-negative integer.")
+  }
+  if (!inherits(alpha, "numeric") ||
+      length(alpha) != 1 ||
+      alpha <= 0 ||
+      alpha >= 1) {
+    stop("'alpha' must specify a significance level between 0 and 1.")
+  }
   regtype <- match.arg(regtype)
+  if (!(is.null(matchgroup) ||
+        (is.character(matchgroup) && length(matchgroup) == 1))) {
+    stop(
+      "'matchgroup' must be NULL or optionally a length 1 character ",
+      "vector\nnaming a variable in 'normaldata' to condition the analysis on."
+    )
+  }
   matchtiemethod <- match.arg(matchtiemethod)
-  new_expvars_prp <- expvars
-  new_expvars_prp2 <- unlist(strsplit(new_expvars_prp, ":"))
-  new_expvars <- unlist(strsplit(new_expvars_prp2, "[*]"))
-  func_var_names <- unique(
-    c(outcomevar, new_expvars, adjustment_fixed, by_var, weightvar)
+  if (!(is.null(values_to_remove) || is.character(values_to_remove))) {
+    stop(
+      "'values_to_remove' must be a character vector specifying values ",
+      "to remove from ALL variables used in the regression\n before the ",
+      "analysis, or NULL (the default) if no values should be removed."
+    )
+  }
+  if (!is.null(weightvar)) {
+    if (!is.character(weightvar)) {
+      stop(
+        "weightvar must be NULL or optionally a character of length 1 ",
+        "naming a column\nin `normaldata` with numeric weights ",
+        "for each observation."
+      )
+    } else if (!(length(weightvar == 1) && weightvar %in% names(normaldata))) {
+      stop(
+        "weightvar must name a single column in 'normaldata' with numeric",
+        "weights\nfor each observation."
+      )
+    } else if (!is.numeric(normaldata[[weightvar]])) {
+      stop(
+        "The column named in weightvar must contain numeric weights",
+        "for each observation."
+      )
+    }
+  }
+  if (!(isTRUE(surveydata) || isFALSE(surveydata))) {
+    stop("'surveydata' must be a boolean.")
+  }
+  if (!(is.null(textvar) || inherits(textvar, "character"))) {
+    stop("When 'textvar' is specified it must be a character.")
+  }
+  if (!(isTRUE(model_object) || isFALSE(model_object))) {
+    stop("'model_object' must be a boolean.")
+  }
+  if (isTRUE(surveydata) && !is.null(matchgroup)) {
+    stop(
+      "The combination of using surveydata and conditioning/matching is ",
+      "not supported."
+    )
+  }
+  if (regtype == "log-linear" && !is.null(matchgroup)) {
+    stop("When regtype is set to 'log-linear', no conditioning is supported.")
+  }
+  if (regtype == "log-linear" && surveydata == TRUE) {
+    stop("When regtype is set to 'log-linear', surveydata is not supported.")
+  }
+  ### End of input checks
+
+  normaldata_names <- unique(
+    c(
+      outcomevar,
+      unlist(strsplit(expvars, "[:*]")),
+      adjustment_fixed,
+      by_var,
+      weightvar,
+      matchgroup
+    )
   )
 
-  func_table1 <- normaldata |>
-    dplyr::select(dplyr::all_of(func_var_names))
+  normaldata <- dplyr::select(normaldata, dplyr::all_of(normaldata_names))
 
   if (is.null(by_var)) {
     by_var_level_count <- 1
   } else {
-    by_var2 <- dplyr::pull(
-      unique(dplyr::distinct(dplyr::select(func_table1, {{ by_var }})))
-    )
-    if (is.numeric(by_var2)) {
-      by_var3 <- by_var2[!is.na(by_var2)]
+    by_var_levels <- normaldata |>
+      dplyr::select({{ by_var }}) |>
+      dplyr::distinct() |>
+      unique() |>
+      dplyr::pull()
+    if (is.numeric(by_var_levels)) {
+      by_var_levels <- by_var_levels[!is.na(by_var_levels)]
     }
-    if (is.factor(by_var2) | is.character(by_var2)) {
-      by_var3 <- as.character(by_var2[!is.na(by_var2) & by_var2 != ""])
+    if (is.factor(by_var_levels) || is.character(by_var_levels)) {
+      by_var_levels <- as.character(by_var_levels[!is.na(by_var_levels) & by_var_levels != ""])
     }
-    by_var_level_count <- length(by_var3)
+    by_var_level_count <- length(by_var_levels)
   }
-
-  outcome_var_count <- length(outcomevar)
-  expvars_var_count <- length(expvars)
 
   for (k in seq_len(by_var_level_count)) {
     if (is.null(by_var)) {
       By_var_name <- c("None")
-      func_table1_2 <- func_table1
+      normaldata_k <- normaldata
     } else {
-      by_var_level <- dplyr::nth(by_var3, n = k)
+      by_var_level <- dplyr::nth(by_var_levels, n = k)
       By_var_name <- paste(by_var, "=", by_var_level)
       print(paste0("By_var: ", By_var_name))
-      func_table1_2 <- dplyr::filter(
-        func_table1,
+      normaldata_k <- dplyr::filter(
+        normaldata,
         as.character(.data[[by_var]]) == by_var_level
       )
     }
 
-    for (i in seq_len(outcome_var_count)) {
-      Outcome_var_name <- dplyr::nth(outcomevar, n = i)
-      print(paste0("Outcome: ", Outcome_var_name))
+    for (i in seq_along(outcomevar)) {
+      outcomevar_name <- dplyr::nth(outcomevar, n = i)
+      print(paste0("Outcome: ", outcomevar_name))
 
-      for (j in seq_len(expvars_var_count)) {
-        Expvar_var_name <- dplyr::nth(expvars, n = j)
-        print(paste0("Expvar: ", Expvar_var_name))
-        new_expvar <- unique(c(Expvar_var_name, adjustment_fixed))
-        func_res1 <- try_catch_warnings(
+      for (j in seq_along(expvars)) {
+        expvar_name <- dplyr::nth(expvars, n = j)
+        print(paste0("Expvar: ", expvar_name))
+        odds_ratio_output <- try_catch_warnings(
           odds_ratio_function(
-            normaldata = func_table1_2,
-            outcomevar = Outcome_var_name,
-            expvars = new_expvar,
+            normaldata = normaldata_k,
+            outcomevar = outcomevar_name,
+            expvars = unique(c(expvar_name, adjustment_fixed)),
             number_decimals = number_decimals,
             alpha = alpha,
             regtype = regtype,
@@ -196,77 +292,82 @@ odds_ratio_function_repeated <- function(
           ),
           character = TRUE
         )
-        if (model_object == FALSE & func_res1$error == '') {
-          func_res2_prp <- func_res1$value |>
-            dplyr::mutate(
+        if (model_object == FALSE && odds_ratio_output$error == '') {
+          odds_ratio_tmp_table <- dplyr::mutate(
+              odds_ratio_output$value,
               By_name = By_var_name,
-              Outcome_name = Outcome_var_name,
-              Expvar_name = Expvar_var_name
+              Outcome_name = outcomevar_name,
+              Expvar_name = expvar_name
             )
-          if (func_res1$warning != '') {
-            func_res2 <- func_res2_prp |>
-              dplyr::mutate(
+          if (odds_ratio_output$warning != '') {
+            odds_ratio_tmp_table <- dplyr::mutate(
+                odds_ratio_tmp_table,
                 Warning = dplyr::case_when(
-                  .data$term == "(Intercept)" ~ paste0(func_res1$warning),
+                  .data$term == "(Intercept)" ~ paste0(odds_ratio_output$warning),
                   TRUE ~ ""
                 )
               )
-          } else {
-            func_res2 <- func_res2_prp
           }
-          if (k==1 & i==1 & j==1) {
-            func_table2 <- func_res2
+          if (k==1 && i==1 && j==1) {
+            odds_ratio_table <- odds_ratio_tmp_table
           } else {
-            func_table2 <- dplyr::bind_rows(func_table2, func_res2)
-          }
-        } else if (model_object == TRUE & func_res1$error == '') {
-          if (k==1 & i==1 & j==1) {
-            func_table2 <- c(
-              "By" = By_var_name,
-              "Outcome" = Outcome_var_name,
-              "Expvar" = Expvar_var_name,
-              "Warning" = func_res1$warning,
-              func_res1$value
-            )
-          } else {
-            func_table2 <- c(
-              func_table2,
-              "By" = By_var_name,
-              "Outcome" = Outcome_var_name,
-              "Expvar" = Expvar_var_name,
-              "Warning" = func_res1$warning,
-              func_res1$value
+            odds_ratio_table <- dplyr::bind_rows(
+              odds_ratio_table,
+              odds_ratio_tmp_table
             )
           }
-        } else if (model_object == FALSE & func_res1$error != '') {
-          func_res2 <- as.data.frame(func_res1$error) |>
+        } else if (model_object == TRUE && odds_ratio_output$error == '') {
+          if (k==1 && i==1 && j==1) {
+            odds_ratio_table <- c(
+              "By" = By_var_name,
+              "Outcome" = outcomevar_name,
+              "Expvar" = expvar_name,
+              "Warning" = odds_ratio_output$warning,
+              odds_ratio_output$value
+            )
+          } else {
+            odds_ratio_table <- c(
+              odds_ratio_table,
+              "By" = By_var_name,
+              "Outcome" = outcomevar_name,
+              "Expvar" = expvar_name,
+              "Warning" = odds_ratio_output$warning,
+              odds_ratio_output$value
+            )
+          }
+        } else if (model_object == FALSE && odds_ratio_output$error != '') {
+          odds_ratio_tmp_table <- odds_ratio_output$error |>
+            dplyr::as_tibble() |>
             dplyr::rename(Error = 1) |>
             dplyr::mutate(
               By_name = By_var_name,
-              Outcome_name = Outcome_var_name,
-              Expvar_name = Expvar_var_name
+              Outcome_name = outcomevar_name,
+              Expvar_name = expvar_name
             ) |>
             dplyr::relocate("Error", .after = dplyr::last_col())
-          if (k == 1 & i == 1 & j == 1) {
-            func_table2 <- func_res2
+          if (k == 1 && i == 1 && j == 1) {
+            odds_ratio_table <- odds_ratio_tmp_table
           } else {
-            func_table2 <- dplyr::bind_rows(func_table2, func_res2)
+            odds_ratio_table <- dplyr::bind_rows(
+              odds_ratio_table,
+              odds_ratio_tmp_table
+            )
           }
-        } else if (model_object == TRUE & func_res1$error != '') {
-          if (k == 1 & i == 1 & j == 1) {
-            func_table2 <- c(
+        } else if (model_object == TRUE && odds_ratio_output$error != '') {
+          if (k == 1 && i == 1 && j == 1) {
+            odds_ratio_table <- c(
               "By" = By_var_name,
-              "Outcome" = Outcome_var_name,
-              "Expvar" = Expvar_var_name,
-              "Error" = func_res1$error
+              "Outcome" = outcomevar_name,
+              "Expvar" = expvar_name,
+              "Error" = odds_ratio_output$error
             )
           } else {
-            func_table2 <- c(
-              func_table2,
+            odds_ratio_table <- c(
+              odds_ratio_table,
               "By" = By_var_name,
-              "Outcome" = Outcome_var_name,
-              "Expvar" = Expvar_var_name,
-              "Error" = func_res1$error
+              "Outcome" = outcomevar_name,
+              "Expvar" = expvar_name,
+              "Error" = odds_ratio_output$error
             )
           }
         }
@@ -275,12 +376,10 @@ odds_ratio_function_repeated <- function(
   }
 
   if (model_object == FALSE) {
-    func_table3 <- func_table2 |>
+    odds_ratio_table <- odds_ratio_table |>
       dplyr::relocate("Expvar_name", .before = 1) |>
       dplyr::relocate("Outcome_name", .before = 1) |>
       dplyr::relocate("By_name", .before = 1)
-  } else{
-    func_table3 <- func_table2
   }
-  return(func_table3)
+  return(odds_ratio_table)
 }

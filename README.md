@@ -10,7 +10,11 @@ This package is a framework for sharing guides, examples, and functions here at
 EpiForsk. It is primarily managed by ADLS and KIJA, but is intended to be a 
 collaborative effort and we encourage sharing your hard earned code snippets.  
 
+## Availability
+The package is available on [CRAN](https://CRAN.R-project.org/package=EpiForsk).
+
 ## Installation & Use
+### CRAN version
 To install the package write
 ```{r}
 install.packages("EpiForsk")
@@ -19,12 +23,15 @@ And to load the package write
 ```{r}
 library("EpiForsk")
 ```
-
-## Availability
-The package is available on [CRAN](https://CRAN.R-project.org/package=EpiForsk).
+### Latest version
+The latest version of the package can be installed directly from github:
+```
+# install.packages("devtools")
+devtools::install_github("Laksafoss/EpiForsk")
+```
 
 ## What is already in the package
-The package is (hopefully) constantly under development, and to see all content
+The package is (hopefully) constantly under development. To see all content
 currently available in the package use 
 
 ```{r}
@@ -42,7 +49,7 @@ specific details, allowing for generally transferable ideas to shine through.
 
 A high priority is to have the package hosted on CRAN, which imposes certain
 limitations on it. One such is its size, which is currently limited by CRAN at
-5 MB. As the popularity of this initiative (hopefully) grows, we may 
+100 MB. As the popularity of this initiative (hopefully) grows, we may 
 reconsider what will be allowed in the package. 
 
 There are two main formats for contributing: 

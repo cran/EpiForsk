@@ -10,7 +10,7 @@ DiscreteCovariatesToOneHot(df, factors = dplyr::everything())
 \item{df}{A data frame, data frame extension (e.g. a tibble), or a lazy data
 frame (e.g. from dbplyr or dtplyr).}
 
-\item{factors}{<\code{\link[=dplyr_tidy_select]{tidy-select}}> One or more unquoted
+\item{factors}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> One or more unquoted
 expressions naming factors in df to one-hot encode.}
 }
 \value{

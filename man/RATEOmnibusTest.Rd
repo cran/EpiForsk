@@ -2,9 +2,13 @@
 % Please edit documentation in R/kija_rate_omnibus_test.R
 \name{RATEOmnibusTest}
 \alias{RATEOmnibusTest}
+\alias{RATEOmnibusTest.causal_forest}
+\alias{RATEOmnibusTest.causal_survival_forest}
 \title{RATE based omnibus test of heterogeneity}
 \usage{
-RATEOmnibusTest(
+RATEOmnibusTest(forest, ...)
+
+\method{RATEOmnibusTest}{causal_forest}(
   forest,
   level = 0.95,
   target = c("AUTOC", "QINI"),
@@ -16,10 +20,37 @@ RATEOmnibusTest(
   stabilize.splits = TRUE,
   ...
 )
+
+\method{RATEOmnibusTest}{causal_survival_forest}(
+  forest,
+  level = 0.95,
+  target = c("AUTOC", "QINI"),
+  q = seq(0.1, 1, 0.1),
+  R = 500,
+  num.threads = 1,
+  seed = NULL,
+  failure.times = NULL,
+  honesty = TRUE,
+  stabilize.splits = TRUE,
+  sample.fraction = 0.5,
+  mtry = min(ceiling(sqrt(ncol(forest$X.orig)) + 20), ncol(forest$X.orig)),
+  min.node.size = 5,
+  honesty.fraction = 0.5,
+  honesty.prune.leaves = TRUE,
+  alpha = 0.05,
+  imbalance.penalty = 0,
+  ...
+)
 }
 \arguments{
 \item{forest}{An object of class \code{causal_forest}, as returned by
 \link[grf]{causal_forest}(), with binary treatment.}
+
+\item{...}{additional arguments passed to \link[grf]{causal_forest}. By default, the
+arguments used by forest will be used to train new forests on the random
+half-samples. Arguments provided through \code{...} will override these. Note that
+sample.weights and clusters are passed to both \link[grf]{causal_forest} and
+\link[grf]{rank_average_treatment_effect.fit}.}
 
 \item{level}{numeric, level of RATE confidence interval.}
 
@@ -48,11 +79,21 @@ imbalance of a split during training of the new forests on the random
 half-samples, so misspecification will lead to invalid results. Default is
 \code{TRUE}, the default in \link[grf]{causal_forest}.}
 
-\item{...}{additional arguments for \link[grf]{causal_forest}. By default, the
-arguments used by forest will be used to train new forests on the random
-half-samples. Arguments provided through \code{...} will override these. Note that
-sample.weights and clusters are passed to both \link[grf]{causal_forest} and
-\link[grf]{rank_average_treatment_effect.fit}.}
+\item{failure.times}{For valid results, specify the value used to train \code{forest}.}
+
+\item{sample.fraction}{For valid results, specify the value used to train \code{forest}.}
+
+\item{mtry}{For valid results, specify the value used to train \code{forest}.}
+
+\item{min.node.size}{For valid results, specify the value used to train \code{forest}.}
+
+\item{honesty.fraction}{For valid results, specify the value used to train \code{forest}.}
+
+\item{honesty.prune.leaves}{For valid results, specify the value used to train \code{forest}.}
+
+\item{alpha}{For valid results, specify the value used to train \code{forest}.}
+
+\item{imbalance.penalty}{For valid results, specify the value used to train \code{forest}.}
 }
 \value{
 A list of class \code{rank_average_treatment_effect} with elements
@@ -84,16 +125,25 @@ each forest on the samples not used for training.
 }
 \examples{
 \donttest{
-n <- 800
-p <- 3
+n <- 2000
+p <- 5
 X <- matrix(rnorm(n * p), n, p)
+X_surv <- matrix(runif(n * p), n, p)
 W <- rbinom(n, 1, 0.5)
 event_prob <- 1 / (1 + exp(2 * (pmax(2 * X[, 1], 0) * W - X[, 2])))
+horizon <- 1
+failure.time <- pmin(rexp(n) * X_surv[, 1] + W, horizon)
+censor.time <- 2 * runif(n)
+D <- as.integer(failure.time <= censor.time)
 Y <- rbinom(n, 1, event_prob)
+Y_surv <- pmin(failure.time, censor.time)
 clusters <- sample(1:4, n, replace = TRUE)
 cf <- grf::causal_forest(X, Y, W, clusters = clusters)
-rate <- RATEOmnibusTest(cf, target = "QINI")
-rate
+csf <- grf::causal_survival_forest(X, round(Y_surv, 2), W, D, horizon = horizon)
+rate_cf <- RATEOmnibusTest(cf, target = "QINI")
+rate_csf <- RATEOmnibusTest(csf, target = "QINI")
+rate_cf
+rate_csf
 }
 
 }

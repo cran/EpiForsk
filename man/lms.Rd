@@ -15,14 +15,14 @@ lms(formula, data, grp_id, obs_id = NULL, ...)
 \item{data}{A data frame, data frame extension (e.g. a tibble), or a lazy
 data frame (e.g. from dbplyr or dtplyr).}
 
-\item{grp_id}{<\code{\link[=dplyr_data_masking]{data-masking}}> One unquoted expression
+\item{grp_id}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> One unquoted expression
 naming the id variable in data defining the groups to demean,
 e.g. sibling groups.}
 
-\item{obs_id}{<\code{\link[=dplyr_data_masking]{data-masking}}> Optional, One unquoted
+\item{obs_id}{<\code{\link[dplyr:dplyr_data_masking]{data-masking}}> Optional, One unquoted
 expression naming an id variable to keep track of the input data order.}
 
-\item{...}{Additional arguments to be passed to \link[stats]{lm}(). In print,
+\item{...}{Additional arguments to be passed to \link[stats:lm]{lm}. In print,
 additional arguments are ignored without warning.}
 
 \item{x}{An S3 object with class lms.}

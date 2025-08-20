@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -13,10 +13,10 @@ library(tidyr)
 library(cowplot)
 library(grDevices)
 
-## ---- eval = FALSE------------------------------------------------------------
-#  windowsFonts(Calibri = windowsFont("TT Calibri"))
-#  windowsFonts(Helvetica = windowsFont("TT Helvetica"))
-#  windowsFonts(Arial = windowsFont("TT Arial"))
+## ----eval = FALSE-------------------------------------------------------------
+# windowsFonts(Calibri = windowsFont("TT Calibri"))
+# windowsFonts(Helvetica = windowsFont("TT Helvetica"))
+# windowsFonts(Arial = windowsFont("TT Arial"))
 
 ## -----------------------------------------------------------------------------
 plot_data <- andh_forest_data %>%
@@ -199,7 +199,7 @@ label_plot <- label_data %>%
   )
 
 
-## ---- fig.height = 5, fig.width = 10, warning = FALSE-------------------------
+## ----fig.height = 5, fig.width = 10, warning = FALSE--------------------------
 plot_grid(plotlist = c(list(label_plot), plot_list), 
           rel_widths = c(1.1, 1, 1, 1), 
           ncol = 4)

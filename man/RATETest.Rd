@@ -9,7 +9,7 @@ RATETest(
   priorities,
   level = 0.95,
   cov_type = c("continuous", "discrete"),
-  target = "AUTOC",
+  target = c("AUTOC", "QINI"),
   q = seq(0.1, 1, by = 0.1),
   R = 500,
   subset = NULL,
