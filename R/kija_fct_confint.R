@@ -1009,19 +1009,19 @@ ci_fct <- function(i,
   constraint <- CVXR::quad_form(beta_hat[which_parm] - beta, xtx_red) <=
     qchisq(level, length(beta_hat[which_parm]))
   problem <- CVXR::Problem(objective, constraints = list(constraint))
-  result_lower <- CVXR::solve(problem)
+  result_lower <- CVXR::psolve(problem)
   # find ci_upper
   beta <- CVXR::Variable(dim(xtx_red)[1])
   objective <- CVXR::Maximize(f(beta)[i])
   constraint <- CVXR::quad_form(beta_hat[which_parm] - beta, xtx_red) <=
     qchisq(level, length(beta_hat[which_parm]))
   problem <- CVXR::Problem(objective, constraints = list(constraint))
-  result_upper <- CVXR::solve(problem)
+  result_upper <- CVXR::psolve(problem)
   # collect results
   out <- dplyr::tibble(
     estimate = f(beta_hat[which_parm])[i],
-    ci_lower = result_lower$value,
-    ci_upper = result_upper$value
+    ci_lower = result_lower,
+    ci_upper = result_upper
   )
   return(out)
 }

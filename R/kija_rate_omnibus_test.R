@@ -423,7 +423,7 @@ RATEOmnibusTest.causal_survival_forest <- function(forest,
     clust_arg_nsample <- csf_args$clusters[-sample]
   }
   forest_1 <- grf::causal_survival_forest(
-    X = forest$X.orig[sample,],
+    X = forest$X.orig[sample, , drop = FALSE],
     Y = forest$Y.orig[sample],
     W = forest$W.orig[sample],
     D = forest$D.orig[sample],
@@ -450,7 +450,7 @@ RATEOmnibusTest.causal_survival_forest <- function(forest,
     seed = seed[1]
   )
   forest_2 <- grf::causal_survival_forest(
-    X = forest$X.orig[-sample,],
+    X = forest$X.orig[-sample, , drop = FALSE],
     Y = forest$Y.orig[-sample],
     W = forest$W.orig[-sample],
     D = forest$D.orig[-sample],
