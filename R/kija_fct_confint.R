@@ -1003,6 +1003,9 @@ ci_fct <- function(i,
                    level,
                    n_grid,
                    k) {
+  # Disable problematic solvers
+  CVXR::exclude_solvers("MOSEK")
+  on.exit(CVXR::include_solvers("MOSEK"))
   # find ci_lower
   beta <- CVXR::Variable(dim(xtx_red)[1])
   objective <- CVXR::Minimize(f(beta)[i])

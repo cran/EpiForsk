@@ -1,7 +1,7 @@
 Package: EpiForsk
 Title: Code Sharing at the Department of Epidemiology Research at
         Statens Serum Institut
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: 
     c(person("Anders", "Husby", , "andh@ssi.dk", role = c("aut"),
              comment = c(ORCID = "0000-0002-7634-8455")),
@@ -40,7 +40,7 @@ Suggests: cli, CVXR, furrr, future, ggsci, knitr, parallel, rmarkdown,
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2026-03-19 22:33:42 UTC; kdj
+Packaged: 2026-03-30 08:11:44 UTC; b246294
 Author: Anders Husby [aut] (ORCID: <https://orcid.org/0000-0002-7634-8455>),
   Anna Laksafoss [aut] (ORCID: <https://orcid.org/0000-0002-9898-2924>),
   Emilia Myrup Thiesson [aut] (ORCID:
@@ -51,4 +51,4 @@ Author: Anders Husby [aut] (ORCID: <https://orcid.org/0000-0002-7634-8455>),
   Klaus Rostgaard [aut] (ORCID: <https://orcid.org/0000-0001-6220-9414>)
 Maintainer: Kim Daniel Jakobsen <kija@ssi.dk>
 Repository: CRAN
-Date/Publication: 2026-03-19 22:50:02 UTC
+Date/Publication: 2026-03-30 09:30:37 UTC
